@@ -1,0 +1,54 @@
+### Specifics files or directories must be cleaned ###
+doc/
+doc/**/*
+**/doc/
+**/doc/**/*
+
+### Maven and Spring Boot components ###
+!.mvn/wrapper/maven-wrapper.jar
+/target/
+/target/**/*
+**/target
+.java-version
+pom.xml.versionsBackup
+**/pom.xml.versionsBackup
+
+### Integration projects ###
+logs/
+logs/**/*
+
+### Node, TypeScript, JavaScript project ###
+node_modules/
+**/node_modules
+node_modules/**.*
+config/**/*.reference.yml
+
+### STS IDEA ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans IDEA ###
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VSCode IDEA ###
+.DS_Store
+**/.DS_Store
+.history
+.history/**/*
+installation.info
