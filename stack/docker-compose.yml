@@ -2,52 +2,50 @@ version: '3.7'
 
 services:
 
-  application:
-    container_name: ${NAMES[0]}
-    image: ${IMAGES[0]}
-    user: ${USERS[0]}
-    ports: ['${PORTS[0]}:${PORTS[0]}']
-    volumes:
-      # - ./config/application/*.tar.gz:/usr/share/analytic/*.tar.gz
-      # - ./config/application/service.sh:/usr/share/analytic/service.sh
-      - application-data:${PATHS[0]}/data
-    #restart: always
-    depends_on: ['artifactory']
-    networks: ['${NETWORKS[0]']
-    links: ['artifactory']
+  # application:
+  #   container_name: ${NAMES[0]}
+  #   image: ${IMAGES[0]}
+  #   user: ${USERS[0]}
+  #   ports: ['${PORTS[0]}:${PORTS[0]}']
+  #   volumes:
+  #     # - ./config/application/*.tar.gz:/usr/share/analytic/*.tar.gz
+  #     # - ./config/application/service.sh:/usr/share/analytic/service.sh
+  #     - application-data:${PATHS[0]}/data
+  #   #restart: always
+  #   depends_on: ['artifactory']
+  #   networks: ['${NETWORKS[0]']
+  
+  # artifactory:
+  #   container_name: ${NAMES[1]}
+  #   image: ${IMAGES[1]}
+  #   user: ${USERS[1]}
+  #   ports: ['${PORTS[1]}:${PORTS[1]}']
+  #   volumes:
+  #     - artifactory-data:${PATHS[1]}/data
+  #   #restart: always
+  #   networks: ['${NETWORKS[0]']
 
-  artifactory:
-    container_name: ${NAMES[1]}
-    image: ${IMAGES[1]}
-    user: ${USERS[1]}
-    ports: ['${PORTS[1]}:${PORTS[1]}']
-    volumes:
-      - artifactory-data:${PATHS[1]}/data
-    #restart: always
-    networks: ['${NETWORKS[0]']
-
-  git:
-    container_name: ${NAMES[2]}
-    image: ${IMAGES[2]}
-    user: ${USERS[2]}
-    ports: ['${PORTS[2]}:${PORTS[2]}']
-    volumes:
-      - git-data:${PATHS[2]}/data
-    #restart: always
-    networks: ['${NETWORKS[0]']
+  # git:
+  #   container_name: ${NAMES[2]}
+  #   image: ${IMAGES[2]}
+  #   user: ${USERS[2]}
+  #   ports: ['${PORTS[2]}:${PORTS[2]}']
+  #   volumes:
+  #     - git-data:${PATHS[2]}/data
+  #   #restart: always
+  #   networks: ['${NETWORKS[0]']
 
   jenkins:
-    container_name: ${NAMES[3]}
-    image: ${IMAGES[3]}
-    user: ${USERS[3]}
-    ports: ['${PORTS[3]}:${PORTS[3]}']
+    container_name: jenkins
+    image: ghandalf/jenkins:${CONTAINERS_VERSION}
+    user: jenkinsuser
+    ports: ['32183:32183']
     volumes:
-      - git-data:${PATHS[3]}/data
+      - git-data:/usr/share/jenkins/data
     #restart: always
-    depends_on: ['git', 'artifactory']
-    networks: ['${NETWORKS[0]']
-    links: ['git', 'artifactory']
-
+    # depends_on: ['git', 'artifactory']
+    # networks: ['${NETWORK_NAME}']
+    
 volumes:
   application-data:
     driver: local
@@ -58,4 +56,4 @@ volumes:
   jenkins-data:
     driver: local
 
-networks: { '${NETWORKS[0]}:{}' }
+# networks: { '${NETWORK_NAME}' }

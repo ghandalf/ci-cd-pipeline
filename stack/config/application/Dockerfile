@@ -3,12 +3,12 @@ FROM centos
 LABEL Author="Francis Ouellet <fouellet@dminc.com>"
 LABEL Description="Base on Centos 7"
 
-ENV CONTAINER_NAME ${NAMES[0]}
-ENV CONTAINER_IMAGE ${IMAGES[0]}
+ENV CONTAINER_NAME application
+ENV CONTAINER_IMAGE ghandalf/application:${CONTAINERS_VERSION}
 ENV CONTAINER_VERSION ${CONTAINERS_VERSION}
-ENV APP_USER ${USERS[0]}
-ENV APP_GROUP ${GROUPS[0]}
-ENV APP_HOME ${PATHS[0]}
+ENV APP_USER applicationuser
+ENV APP_GROUP applicationgroup
+ENV APP_HOME /usr/share/application
 
 RUN yum -y update
 RUN yum --security check-update
@@ -24,7 +24,7 @@ COPY ./config/${CONTAINER_NAME}/system/service.sh ${APP_HOME}/service.sh
 RUN chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME}
 RUN chmod 755 ${APP_HOME}/service.sh
 
-EXPOSE ${PORTS[0]}
+EXPOSE 32180
 
 # Expect to have service.sh under rc.local or systemD, 
 # so that starting the container will start the application
