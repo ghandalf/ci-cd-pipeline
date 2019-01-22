@@ -85,17 +85,10 @@ function pull() {
 # Best practice is to use the swarm configuration.
 ##
 function start() {
-	case $1 in
-		stack)
-			# compose needs to shutdown all background processing before starting them.
-			stopStack;
-			clean;
-			docker-compose -f $COMPOSE_FILE up;
-			;;
-		*)
-			echo -e "\n${dt}${BRed}Please you need to provide a sub command <stack>.${Color_Off}";
-			;;
-	esac
+	# compose needs to shutdown all background processing before starting them.
+	stopStack;
+	clean;
+	docker-compose -f $COMPOSE_FILE up;
 }
 
 function stopStack() {
@@ -105,14 +98,7 @@ function stopStack() {
 }
 
 function stop() {
-	case $1 in
-		stack)
-			stopStack;
-			;;
-		*)
-			echo -e "\n${dt}Please you need to provide a sub command <stack>";
-			;;
-	esac
+	stopStack;
 }
 
 ###
@@ -123,15 +109,15 @@ function clean() {
     echo -e "\n${dt}${Red}Removing background containers${Color_Off}";
 	echo -e "${dt}${Red} Stopping containers `docker stop $(docker ps -aq)`${Color_Off}";
 	echo -e "${dt}${Red} Removing containers `docker rm $(docker ps -aq)`${Color_Off}";
-	echo -e "${dt}${Red} Cleaning containers volumes `docker-compose down -v`${Color_Off}";
+	#echo -e "${dt}${Red} Cleaning containers volumes `docker-compose down -v`${Color_Off}";
 
 	#local result=`docker network ls --filter 'name=$analytic_network' | grep $analytic_network | awk {'printf $2'}`;
-	for network in "${networks[@]}"; do
-		echo -e "${dt}${Red} Removing network: ${network} ${Color_Off}";
-		docker network rm ${network};
-	done
+	#for network in "${networks[@]}"; do
+	#	echo -e "${dt}${Red} Removing network: ${network} ${Color_Off}";
+	#	docker network rm ${network};
+	#done
 
-	docker swarm leave --force;
+	#docker swarm leave --force;
     echo -e "\n";
 }
 

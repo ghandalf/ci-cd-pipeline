@@ -25,35 +25,41 @@ services:
   #   #restart: always
   #   networks: ['${NETWORKS[0]']
 
-  # git:
-  #   container_name: ${NAMES[2]}
-  #   image: ${IMAGES[2]}
-  #   user: ${USERS[2]}
-  #   ports: ['${PORTS[2]}:${PORTS[2]}']
+  # gitlab:
+  #   container_name: gitlab
+  #   image: ghandalf/gitlab:${CONTAINERS_VERSION}
+  #   hostname: gitlab.dmi.com
+  #   user: gituser
+  #   ports: ['32182:32182']
   #   volumes:
-  #     - git-data:${PATHS[2]}/data
+  #     - gitlab-data:${PATHS[2]}/data
   #   #restart: always
-  #   networks: ['${NETWORKS[0]']
+  #   networks: ['pipeline_net']
 
+    # user/password=admin/74cbc0107e0e4efca7a4d98c8395743b
+  # Jenkins running under jdk 11: https://jenkins.io/blog/2018/12/14/java11-preview-availability/
   jenkins:
     container_name: jenkins
     image: ghandalf/jenkins:${CONTAINERS_VERSION}
+    hostname: jenkins
     user: jenkinsuser
     ports: ['32183:32183']
     volumes:
-      - git-data:/usr/share/jenkins/data
+      # - ./config/jenkins/system/jenkins.sh:/usr/profile.d/jenkins.sh
+      # - ./config/jenkins/system/service.sh:/usr/share/jenkins/bin/sercice.sh
+      - jenkins-data:/usr/share/jenkins/data
     #restart: always
     # depends_on: ['git', 'artifactory']
-    # networks: ['${NETWORK_NAME}']
+    networks: ['pipeline_net']
     
 volumes:
   application-data:
     driver: local
   artifactory-data:
     driver: local
-  git-data:
+  gitlab-data:
     driver: local
   jenkins-data:
     driver: local
 
-# networks: { '${NETWORK_NAME}' }
+networks: { pipeline_net:{} }
