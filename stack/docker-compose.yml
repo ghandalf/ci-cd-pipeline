@@ -36,13 +36,12 @@ services:
   #   #restart: always
   #   networks: ['pipeline_net']
 
-    # user/password=admin/74cbc0107e0e4efca7a4d98c8395743b
-  # Jenkins running under jdk 11: https://jenkins.io/blog/2018/12/14/java11-preview-availability/
+  # user/password=admin/74cbc0107e0e4efca7a4d98c8395743b
   jenkins:
     container_name: jenkins
     image: ghandalf/jenkins:${CONTAINERS_VERSION}
     hostname: jenkins
-    user: jenkinsuser
+    user: jenkins
     ports: ['32183:32183']
     volumes:
       # - ./config/jenkins/system/jenkins.sh:/usr/profile.d/jenkins.sh
@@ -51,7 +50,21 @@ services:
     #restart: always
     # depends_on: ['git', 'artifactory']
     networks: ['pipeline_net']
-    
+
+  # nexus:
+  #   container_name: nexus
+  #   image: ghandalf/nexus:${CONTAINERS_VERSION}
+  #   hostname: nexus
+  #   user: nexus
+  #   ports: ['32181:32181']
+  #   volumes:
+  #     # - ./config/jenkins/system/jenkins.sh:/usr/profile.d/jenkins.sh
+  #     # - ./config/jenkins/system/service.sh:/usr/share/jenkins/bin/sercice.sh
+  #     - nexus-data:/usr/share/nexus/data
+  #   #restart: always
+  #   depends_on: ['jenkins']
+  #   networks: ['pipeline_net']
+
 volumes:
   application-data:
     driver: local
@@ -60,6 +73,8 @@ volumes:
   gitlab-data:
     driver: local
   jenkins-data:
+    driver: local
+  nexus-data:
     driver: local
 
 networks: { pipeline_net:{} }

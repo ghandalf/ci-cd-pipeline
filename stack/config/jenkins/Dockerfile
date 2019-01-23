@@ -6,8 +6,8 @@ LABEL Description="Base on Centos 7"
 ENV CONTAINER_NAME jenkins
 ENV CONTAINER_IMAGE ghandalf/jenkins:${CONTAINERS_VERSION}
 ENV CONTAINER_VERSION ${CONTAINERS_VERSION}
-ENV APP_USER jenkinsuser
-ENV APP_GROUP jenkinsgroup
+ENV APP_USER jenkins
+ENV APP_GROUP jgroup
 ENV APP_HOME /usr/share/jenkins
 ENV JENKINS_HOME ${APP_HOME}
 ENV JENKINS_PORT 32183
@@ -23,23 +23,35 @@ ENV ANT_DIR /usr/share/ant
 # Node v10.15.0 used by Jenkins jobs
 ENV NODEJS_DIR /usr/share/nodejs
 ENV NODEJS_VERSION node-v10.15.0-linux-x64
+# SonarQube
+ENV SONARQUBE_HOME /usr/share/sonarqube
+ENV SONARQUBE_VERSION sonarqube-7.5
+# SonarQube Scanner
+# to be installed as a plugin his name: SonarQube Scanner for Jenkins
+# Nexus IQ server, 
+# to be installed as a plugin his name: Nexus Platform
+# Maven Integration plugin must be installed
 
 RUN yum -y update
 RUN yum --security check-update
 RUN yum --security update
-RUN yum install -y tree netstat dnsutils wget mailx
+RUN yum install -y tree netstat dnsutils wget mailx unzip
+
 # Subversion 1.8 installation with RPM
-COPY ./config/jenkins/system/Wandisco-svn.repo /etc/yum.repos.d/
+COPY ./config/jenkins/system/yum.repos.d/Wandisco-svn.repo /etc/yum.repos.d/
 RUN chmod 0644 /etc/yum.repos.d/Wandisco-svn.repo
 RUN yum clean all
 RUN yum install -y subversion
 RUN svn --version
+# Subversion 1.8 installation done
+
 # Git 2.18 installation with RPM
-COPY ./config/jenkins/system/Wandisco-git.repo /etc/yum.repos.d/
+COPY ./config/jenkins/system/yum.repos.d/Wandisco-git.repo /etc/yum.repos.d/
 RUN chmod 0644 /etc/yum.repos.d/Wandisco-git.repo
 RUN yum clean all
 RUN yum install -y git
 RUN git --version
+# Git 2.18 installation done
 
 # Java installation
 RUN mkdir -p ${JAVA_DIR}
@@ -100,7 +112,7 @@ RUN echo 1 | alternatives --config npx
 # Node, npm and npx installation done
 
 # Jenkins installation
-RUN mkdir -p ${APP_HOME} ${APP_HOME}/bin
+RUN mkdir -p ${APP_HOME} ${APP_HOME}/bin ${APP_HOME}/data/.m2
 RUN wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war -P ${APP_HOME}/bin
 # Those jars are needed to run jenkins under jdk 11
 # RUN wget http://central.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar -P ${APP_HOME}/bin
@@ -108,29 +120,45 @@ RUN wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war -P ${APP_HOME}/
 # RUN wget http://central.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0.1/jaxb-impl-2.3.0.1.jar -P ${APP_HOME}/bin
 # RUN wget https://github.com/javaee/activation/releases/download/JAF-1_2_0/javax.activation.jar -P ${APP_HOME}/bin
 COPY ./config/jenkins/system/service.sh ${APP_HOME}/
+COPY ./config/jenkins/system/.m2/settings.xml ${APP_HOME}/data/.m2/
+COPY ./config/jenkins/system/.m2/settings-security.xml ${APP_HOME}/data/.m2/
 RUN chmod 0750 ${APP_HOME}/service.sh
 RUN groupadd -g 1002 ${APP_GROUP}
-RUN useradd -r -u 1002 -m -b /usr/share -g ${APP_GROUP} ${APP_USER}
+RUN useradd -r -u 1002 -M -d ${APP_HOME}/data -g ${APP_GROUP} ${APP_USER}
+RUN usermod -s /sbin/nologin ${APP_USER}
 RUN chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME}
 # Jenkins installation done
 
+# SonarQube installation must run with jenkinsuser:jenkinsgroup
+RUN mkdir ${SONARQUBE_HOME}
+RUN wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.5.zip \
+    -P ${SONARQUBE_HOME}
+RUN unzip ${SONARQUBE_HOME}/sonar*.zip -d ${SONARQUBE_HOME}
+RUN chown -R ${APP_USER}:${APP_GROUP} ${SONARQUBE_HOME}
+# SonarQube installation done
+
 # System configuration
-COPY ./config/jenkins/system/java.sh /etc/profile.d/
-RUN chmod 0644 /etc/profile.d/java.sh
-COPY ./config/jenkins/system/jenkins.sh /etc/profile.d/
-RUN chmod 0644 /etc/profile.d/jenkins.sh
-COPY ./config/jenkins/system/maven.sh /etc/profile.d/
-RUN chmod 0644 /etc/profile.d/maven.sh
-COPY ./config/jenkins/system/ant.sh /etc/profile.d/
+COPY ./config/jenkins/system/profile.d/ant.sh /etc/profile.d/
 RUN chmod 0644 /etc/profile.d/ant.sh
-COPY ./config/jenkins/system/nodejs.sh /etc/profile.d/
+COPY ./config/jenkins/system/profile.d/java.sh /etc/profile.d/
+RUN chmod 0644 /etc/profile.d/java.sh
+COPY ./config/jenkins/system/profile.d/jenkins.sh /etc/profile.d/
+RUN chmod 0644 /etc/profile.d/jenkins.sh
+COPY ./config/jenkins/system/profile.d/nodejs.sh /etc/profile.d/
 RUN chmod 0644 /etc/profile.d/nodejs.sh
+COPY ./config/jenkins/system/profile.d/maven.sh /etc/profile.d/
+RUN chmod 0644 /etc/profile.d/maven.sh
+COPY ./config/jenkins/system/profile.d/sonarqube.sh /etc/profile.d/
+RUN chmod 0644 /etc/profile.d/sonarqube.sh
 # System configuration done
 
 EXPOSE ${JENKINS_PORT}
 
+# The USER instruction sets the user name (or UID) and optionally 
+# the user group (or GID) to use when running the image and for 
+# any RUN, CMD and ENTRYPOINT instructions that follow it in the Dockerfile.
+USER ${APP_USER}
+
 # Node container has one and only one application running. It acts as SOLID principles.
 # Dokcer can't use environment variable here.
 ENTRYPOINT ["/usr/share/jenkins/service.sh", "start"]
-
-USER ${APP_USER}
