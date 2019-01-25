@@ -4,7 +4,11 @@ command=$1
 
 function start() {
     echo -e "Starting Subversion server...";
-    ${SUBVERSION_HOME}/bin/svn run
+    if [ -f ${SUBVERSION_HOME}/bin/svn ]; then
+        ${SUBVERSION_HOME}/bin/svn run
+    else
+        echo -e "Welcome";
+    fi
 }
 
 function stop() {

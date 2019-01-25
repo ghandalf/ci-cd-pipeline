@@ -35,7 +35,7 @@ ENV SONARQUBE_VERSION sonarqube-7.5
 RUN yum -y update
 RUN yum --security check-update
 RUN yum --security update
-RUN yum install -y tree netstat dnsutils wget mailx unzip
+RUN yum install -y tree net-tools bind-utils wget mailx unzip
 
 # Subversion 1.8 installation with RPM
 COPY ./config/jenkins/system/yum.repos.d/Wandisco-svn.repo /etc/yum.repos.d/

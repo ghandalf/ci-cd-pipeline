@@ -15,41 +15,19 @@ services:
   #   depends_on: ['artifactory']
   #   networks: ['${NETWORKS[0]']
   
-  # artifactory:
-  #   container_name: ${NAMES[1]}
-  #   image: ${IMAGES[1]}
-  #   user: ${USERS[1]}
-  #   ports: ['${PORTS[1]}:${PORTS[1]}']
+  # jenkins:
+  #   container_name: jenkins
+  #   image: ghandalf/jenkins:${CONTAINERS_VERSION}
+  #   hostname: jenkins
+  #   user: jenkins
+  #   ports: ['32183:32183']
   #   volumes:
-  #     - artifactory-data:${PATHS[1]}/data
+  #     # - ./config/jenkins/system/jenkins.sh:/usr/profile.d/jenkins.sh
+  #     # - ./config/jenkins/system/service.sh:/usr/share/jenkins/service.sh
+  #     - jenkins-data:/usr/share/jenkins/data
   #   #restart: always
-  #   networks: ['${NETWORKS[0]']
-
-  # gitlab:
-  #   container_name: gitlab
-  #   image: ghandalf/gitlab:${CONTAINERS_VERSION}
-  #   hostname: gitlab.dmi.com
-  #   user: gituser
-  #   ports: ['32182:32182']
-  #   volumes:
-  #     - gitlab-data:${PATHS[2]}/data
-  #   #restart: always
+  #   # depends_on: ['subversion']
   #   networks: ['pipeline_net']
-
-  # user/password=admin/74cbc0107e0e4efca7a4d98c8395743b
-  jenkins:
-    container_name: jenkins
-    image: ghandalf/jenkins:${CONTAINERS_VERSION}
-    hostname: jenkins
-    user: jenkins
-    ports: ['32183:32183']
-    volumes:
-      # - ./config/jenkins/system/jenkins.sh:/usr/profile.d/jenkins.sh
-      # - ./config/jenkins/system/service.sh:/usr/share/jenkins/bin/sercice.sh
-      - jenkins-data:/usr/share/jenkins/data
-    #restart: always
-    # depends_on: ['git', 'artifactory']
-    networks: ['pipeline_net']
 
   # nexus:
   #   container_name: nexus
@@ -58,12 +36,22 @@ services:
   #   user: nexus
   #   ports: ['32181:32181']
   #   volumes:
-  #     # - ./config/jenkins/system/jenkins.sh:/usr/profile.d/jenkins.sh
-  #     # - ./config/jenkins/system/service.sh:/usr/share/jenkins/bin/sercice.sh
   #     - nexus-data:/usr/share/nexus/data
   #   #restart: always
   #   depends_on: ['jenkins']
   #   networks: ['pipeline_net']
+
+  subversion:
+    container_name: subversion
+    image: ghandalf/subversion:${CONTAINERS_VERSION}
+    hostname: subversion
+    user: subversion
+    ports: ['32182:32182']
+    volumes:
+      - subversion-data:/usr/share/subversion/data
+    #restart: always
+    # depends_on: ['jenkins']
+    networks: ['pipeline_net']
 
 volumes:
   application-data:
@@ -75,6 +63,8 @@ volumes:
   jenkins-data:
     driver: local
   nexus-data:
+    driver: local
+  subversion-data:
     driver: local
 
 networks: { pipeline_net:{} }

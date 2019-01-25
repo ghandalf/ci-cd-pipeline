@@ -9,15 +9,21 @@ ENV CONTAINER_VERSION ${CONTAINERS_VERSION}
 ENV APP_USER nexus
 ENV APP_GROUP ngroup
 ENV APP_HOME /usr/share/nexus
-ENV NEXUS_PORT 32181
+
 # JDK jdk1.8.0_202
 ENV JAVA_VERSION jdk1.8.0_202
 ENV JAVA_DIR /usr/share/java
+ENV JAVA_HOME ${JAVA_DIR}/${JAVA_VERSION}
+
+ENV NEXUS_VERSION 3.15.1-01
+ENV NEXUS_HOME ${APP_HOME}/nexus-${NEXUS_VERSION}
+ENV NEXUS_DATA ${APP_HOME}/data
+ENV NEXUS_PORT 32181
 
 RUN yum -y update
 RUN yum --security check-update
 RUN yum --security update
-RUN yum install -y tree netstat dnsutils wget mailx
+RUN yum install -y tree net-tools bind-utils wget mailx
 RUN yum clean all
 
 # Java installation
@@ -39,19 +45,18 @@ RUN java -version
 #    JDK 8 done
 
 # Nexus installation
-RUN mkdir -p ${APP_HOME} ${APP_HOME}/data/logs ${APP_HOME}/data/tmp 
+RUN mkdir -p ${APP_HOME} ${NEXUS_DATA}/etc ${NEXUS_DATA}/logs ${NEXUS_DATA}/tmp 
 RUN wget https://download.sonatype.com/nexus/3/latest-unix.tar.gz -P ${APP_HOME}
-RUN tar xvf ${APP_HOME}/*.tar.gz -P ${APP_HOME}
-RUN export FILE_NAME=`ls -la ${APP_HOME} | grep nexus | awk -F" " {printf'$9'}`
+RUN tar xvf ${APP_HOME}/latest-unix.tar.gz -C ${APP_HOME}
 
 COPY ./config/nexus/system/service.sh ${APP_HOME}/
-COPY ./config/nexus/system/conf/bin/nexus.vmoptions ${APP_HOME}/${FILE_NAME}/bin/
-COPY ./config/nexus/system/conf/etc/nexus.properties ${APP_HOME}/${FILE_NAME}/etc/
+COPY ./config/nexus/system/conf/bin/nexus.vmoptions ${NEXUS_HOME}/bin/
+COPY ./config/nexus/system/conf/etc/nexus.properties ${NEXUS_DATA}/etc/
 
-RUN chmod 0750 ${APP_HOME}/service.sh
+RUN chmod 0755 ${APP_HOME}/service.sh
 
 RUN groupadd -g 1002 ${APP_GROUP}
-RUN useradd -r -u 1002 -M -b ${APP_HOME}} -g ${APP_GROUP} ${APP_USER}
+RUN useradd -r -u 1002 -M -b ${APP_HOME} -g ${APP_GROUP} ${APP_USER}
 RUN usermod -s /sbin/nologin ${APP_USER}
 RUN chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME}
 # Nexus installation done

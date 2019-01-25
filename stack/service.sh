@@ -36,7 +36,7 @@ function build() {
 	local size=${#args[*]}; 
 	if [[ $size > 0 ]] ; then
 		for item in ${args[*]}; do
-			docker build -f ./config/$item/Dockerfile  -t ghandalf/$item:${CONTAINERS_VERSION} -t ghandalf/$item:latest .
+			docker build -f ./config/$item/Dockerfile -t ghandalf/$item:${CONTAINERS_VERSION} -t ghandalf/$item:latest .
 		done
 	else
 		echo -e "\n${dt}${BRed}Nothing to build, list length: $size. ${Color_Off}\n";
